@@ -19,7 +19,7 @@
           (else (sum-of-squares x z))))
 
   (define (sqrt-iter guess x)
-    (if (good-enough? guess x)
+    (if (good-enough? guess (improve guess x))
         guess
         (sqrt-iter (improve guess x) x)))
 
@@ -29,11 +29,28 @@
   (define (average x y)
     (/ (+ x y) 2))
 
-  (define (good-enough? guess x)
-    (< (abs (- (square guess) x)) 0.001))
+  (define (good-enough? guess new-guess)
+    (< (abs (- guess new-guess)) 0.001))
 
   (define (sqrt x)
     (sqrt-iter 1.0 x))
+
+  (define (cube x)
+    (* x x x))
+
+  (define (cube-root-iter guess x)
+    (if (good-enough-cube? guess (improve-cube guess x))
+        guess
+        (cube-root-iter (improve-cube guess x) x)))
+
+  (define (improve-cube guess x)
+    (/ (+ (* 2 guess) (/ x (* guess guess))) 3))
+
+  (define (good-enough-cube? guess new-guess)
+    (< (abs (- guess new-guess)) 0.00001))
+
+  (define (cube-root x)
+    (cube-root-iter 1.0 x))
 
   (define (done)
     'mydone1)
