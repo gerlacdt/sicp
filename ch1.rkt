@@ -87,7 +87,77 @@
   (define (double n)
     (A 0 n))
 
+  (define (count-change amount)
+    (cc amount 5))
+
+  (define (cc amount kinds-of-coins)
+    (cond ((= amount 0) 1)
+          ((or (< amount 0) (= kinds-of-coins 0)) 0)
+          (else (+ (cc amount
+                       (- kinds-of-coins 1)) 
+                   (cc (- amount
+                          (first-denomination kinds-of-coins))
+                       kinds-of-coins)))))
+
+  (define (first-denomination kinds-of-coins)
+    (cond ((= kinds-of-coins 1) 1)
+          ((= kinds-of-coins 2) 5)
+          ((= kinds-of-coins 3) 10)
+          ((= kinds-of-coins 4) 25)
+          ((= kinds-of-coins 5) 50)))
+
+  (define (f n)
+    (cond ((< n 3) n)
+          (else (+ (f (- n 1)) (* 2 (f (- n 2))) (* 3 (f (- n 3)))))))
+
+  (define (pascal row col)
+    "computes all number of the pascal triangle 1, 1, 2, 3, 3, 4, 6, 4.
+This are the binominial coeffients."
+    (cond ((= col 0) 1)
+          ((= col row) 1)
+          (else (+ (pascal (- row 1) col) (pascal (- row 1) (- col 1))))))
+
+  (define (expt b n)
+    (define (expt-iter b counter product)
+      (if (= counter 0)
+          product
+          (expt-iter b
+                     (- counter 1)
+                     (* b product))))
+    (expt-iter b n 1))
+
+  (define (fast-expt b n)
+    (cond ((= n 1) 1)
+          ((even? n) (square (fast-expt b (/ n 2))))
+          (else (* b (fast-expt b (- n 1))))))
+
+  (define (fast-expt-iter b n product)
+    (cond ((= n 0) product)
+          (else (if (even? n)
+                    (fast-expt-iter (square b) (/ n 2) product)
+                    (fast-expt-iter b (- n 1) (* product b))))))
+
+  (define (my-mult a b)
+    (if (= b 0)
+        0
+        (+ a (my-mult a (- b 1)))))
+
+  (define (my-mult-fast a b)
+    (cond ((= b 0) 0)
+          ((even? b) (my-mult-fast (double a) (/ b 2)))
+          (else (+ a (my-mult-fast a (- b 1))))))
+
+  (define (my-mult-iter a b result)
+    (cond ((= b 0) result)
+          (else (my-mult-iter a (- b 1) (+ result a)))))
+
+  (define (my-gcd a b)
+    (if (= b 0)
+        a
+        (my-gcd b (remainder a b))))
+
   (define (done)
     'mydone1)
 
   (done))
+
