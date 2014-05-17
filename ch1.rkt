@@ -156,6 +156,15 @@ This are the binominial coeffients."
         a
         (my-gcd b (remainder a b))))
 
+  (define (tower-of-honoi n from to help)
+    "Solves the tower of hanoi puzzle.
+    example: tower-of-hanoi number-of-disks tower-label1 tower-label2
+    tower-label3"
+    (cond ((= n 0) 'done)
+          (else (tower-of-honoi (- n 1) from help to)
+                (displayln (format "stone ~a from ~a to ~a" n from to))
+                (tower-of-honoi (- n 1) help to from))))
+
   (define (done)
     'mydone1)
 
