@@ -165,8 +165,63 @@ This are the binominial coeffients."
                 (displayln (format "stone ~a from ~a to ~a" n from to))
                 (tower-of-honoi (- n 1) help to from))))
 
+  (define (smallest-divisor n)
+    "Finds the smallest divisor for n."
+    (find-divisor n 2))
+
+  (define (find-divisor n test-divisor)
+    (cond ((> (square test-divisor) n ) n)
+          ((divides? test-divisor n) test-divisor)
+          (else (find-divisor n (+ test-divisor 1)))))
+
+  (define (divides? a b)
+    (= (remainder b a) 0))
+
+  (define (prime? n)
+    (= n (smallest-divisor n)))
+
+
+  (define (expmod base exp m)
+    (cond ((= exp 0) 1)
+          ((even? exp)
+           (remainder (square (expmod base (/ exp 2) m)) m))
+          (else 
+           (remainder (* base (expmod base (- exp 1) m)) m))))
+
+  (define (fermat-test n)
+    (define (try-it a)
+      (= (expmod a n n) a))
+    (cond ((< n 4294967087) (try-it (+ 1 (random (- n 1)))))
+          (else (try-it (+ 1 (random 4294967087))))))
+
+
+  (define (fast-prime? n times)
+    (cond ((= times 0) true)
+          ((fermat-test n) (fast-prime? n (- times 1)))
+          (else false)))
+
+  (define (timed-prime-test n)
+    (start-prime-test n (current-milliseconds)))
+
+  (define (start-prime-test n start-time)
+    (cond ((prime? n) 
+           (report-prime n (- (current-milliseconds) start-time))
+           #t)
+          (else #f)))
+
+  (define (report-prime n elapsed-time)
+    (displayln (format "~a is prime! elapsed time: ~a ms" n elapsed-time)))
+
+  (define (search-for-primes n)
+    "Finds the next prime number after n and print it to REPL."
+    (let ((next (+ 1 n)))
+      (cond ((odd? next) 
+             (cond ((timed-prime-test next) next)
+                   (else (search-for-primes (+ n 2)))))
+            (else (search-for-primes (+ n 1))))))
+
   (define (done)
     'mydone1)
 
-  (done))
+   (done))
 
