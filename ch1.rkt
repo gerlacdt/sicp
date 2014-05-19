@@ -169,10 +169,15 @@ This are the binominial coeffients."
     "Finds the smallest divisor for n."
     (find-divisor n 2))
 
+  (define (next-test-divisor n) 
+    "Generates the next test divisor."
+    (cond ((= n 2) 3)
+          (else (+ n 2))))
+
   (define (find-divisor n test-divisor)
     (cond ((> (square test-divisor) n ) n)
           ((divides? test-divisor n) test-divisor)
-          (else (find-divisor n (+ test-divisor 1)))))
+          (else (find-divisor n (next-test-divisor test-divisor)))))
 
   (define (divides? a b)
     (= (remainder b a) 0))
@@ -216,12 +221,21 @@ This are the binominial coeffients."
     "Finds the next prime number after n and print it to REPL."
     (let ((next (+ 1 n)))
       (cond ((odd? next) 
-             (cond ((timed-prime-test next) next)
+             (cond ((prime? next) next)
                    (else (search-for-primes (+ n 2)))))
             (else (search-for-primes (+ n 1))))))
+
+  (define (carmichael-number? n)
+    "Tests if given number is a carmichael-number. That is n is a
+    prime number but passes the fermat test."
+    (define (carmichael-number-helper n a)
+      (cond ((= a 1) (not (prime? n)))
+            ((= (expmod a n n) a) (carmichael-number-helper n (- a 1)))
+            (else #f)))
+    (carmichael-number-helper n (- n 1)))
 
   (define (done)
     'mydone1)
 
-   (done))
+  (done))
 
