@@ -234,8 +234,35 @@ This are the binominial coeffients."
             (else #f)))
     (carmichael-number-helper n (- n 1)))
 
-  (define (done)
-    'mydone1)
+  (define (sum term a next b)
+    (if (> a b)
+        0
+        (+ (term a)
+           (sum term (next a) next b))))
 
-  (done))
+  (define (sum-cubes a b)
+    (sum cube a inc b))
+
+  (define (identity x)
+    x)
+
+  (define (sum-integers a b)
+    (sum identity a inc b))
+
+  (define (pi-sum a b)
+    (define (pi-term x)
+      (/ 1.0 (* x (+ x 2))))
+    (define (pi-next x)
+      (+ x 4))
+    (sum pi-term a pi-next b))
+
+  (define (integral f a b dx)
+    (define (add-dx x)
+      (+ x dx))
+    (* (sum f (+ a (/ dx 2.0)) add-dx b) dx))
+
+  (define (simpson-integral f a b n)
+    'todo)
+  
+  'done)
 
