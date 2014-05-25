@@ -262,7 +262,56 @@ This are the binominial coeffients."
     (* (sum f (+ a (/ dx 2.0)) add-dx b) dx))
 
   (define (simpson-integral f a b n)
-    'todo)
+    (let* ((h (/ (- b a) n))
+           (f-zero (f a))
+           (f-n (f (+ a (* h n))))
+           (sum-of-zero-n (+ (* (/ h 3) f-zero) (* (/ h 3) f-n))))
+      (define (sum-of-odds)
+        (sum (lambda (k) (* ( / h 3) (* 2 (f (+ a (* h k)))))) 1 (lambda (k) (+ k 2)) n))
+      (define (sum-of-evens)
+        (sum (lambda (k) (* (/ h 3) (* 4 (f (+ a (* h k)))))) 2 (lambda (k) (+ k 2)) n))
+      (+ (sum-of-odds) (sum-of-evens) sum-of-zero-n)))
+
+  (define (sum-iter term a next b)
+    (define (iter a result)
+      (if (> a b)
+          result
+          (iter (next a) (+ result (term a)))))
+    (iter (term a) 0))
+
+  (define (product term a next b)
+    (if (> a b)
+        1
+        (* (term a)
+           (product term (next a) next b))))
+
+  (define (product-iter term a next b)
+    (define (iter a result)
+      (if (> a b)
+          result
+          (iter (next a) (* result (term a)))))
+    (iter (term a) 1))
+
+  (define (accumulate combiner null-value term a next b)
+    (if (> a b)
+        null-value
+        (combiner (term a)
+                  (accumulate combiner null-value term (next a) next b))))
+
+  (define (accumulate-iter combiner null-value term a next b)
+    (define (iter a result)
+      (if (> a b)
+          result
+          (iter (next a) (combiner result (term a)))))
+    (iter (term a) null-value))
+
+  (define (filtered-accummulate filter combiner null-value term a next b)
+    (if (> a b)
+        null-value
+        (cond ((filter a)
+                (combiner (term a)
+                          (filtered-accummulate filter combiner null-value term (next a) next b)))
+              (else (filtered-accummulate filter combiner null-value term (next a) next b)))))
   
   'done)
 
