@@ -114,11 +114,11 @@
 
 
 (define (reverse list1)
-  (define (iter list1 collect)
+  (define (iter list1 result)
     (if (null? list1)
-        null
-        (iter (cdr list1) (cons (car list1) collect))))
-  (iter (list1 '())))
+        result
+        (iter (cdr list1) (cons (car list1) result))))
+  (iter list1 null))
 
 'ch2-done
 
