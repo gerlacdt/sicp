@@ -120,6 +120,56 @@
         (iter (cdr list1) (cons (car list1) result))))
   (iter list1 null))
 
+(define (same-parity x . z)
+  (define (help list1 f)
+    (cond ((null? list1) null)
+          ((f (car list1)) (cons (car list1) (help (cdr list1) f)))
+          (else (help (cdr list1) f))))
+  (cond ((odd? x) (help (append (list x) z) odd?))
+        (else (help (append (list x) z) even?))))
+
+(define (my-map proc items)
+  (if (null? items)
+      null
+      (cons (proc (car items))
+            (my-map proc (cdr items)))))
+
+(define (scale-list items factor)
+  (map (lambda (x) (* factor x)) items))
+
+(define (square-list items)
+  (map square items))
+
+(define (square-list-wrong items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things) 
+              (cons answer (square (car things))))))
+  (iter items null))
+
+(define (square-list-reverse items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things) 
+              (cons (square (car things)) answer))))
+  (iter items null))
+
+(define (my-for-each proc items)
+  (cond ((null? items) 'done)
+        (else (proc (car items))
+              (my-for-each proc (cdr items)))))
+
+(define x (cons (list 1 2) (list 3 4)))
+
+(define (count-leaves x)
+  (cond ((null? x) 0)
+        ((not (pair? x)) 1)
+        (else (+ (count-leaves (car x))
+                 (count-leaves (cdr x))))))
+
 'ch2-done
 
 
+  
