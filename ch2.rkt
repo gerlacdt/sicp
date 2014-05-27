@@ -169,6 +169,17 @@
         (else (+ (count-leaves (car x))
                  (count-leaves (cdr x))))))
 
+(define (deep-reverse li)
+  (cond ((null? x) null)
+        ((not (pair? li)) li)
+        (else (append (deep-reverse (cdr li))
+                      (list (deep-reverse (car li)))))))
+
+(define (deep-reverse-map list1)
+  (if (pair? list1)
+      (reverse (map deep-reverse-map list1))
+      list1))
+
 'ch2-done
 
 
