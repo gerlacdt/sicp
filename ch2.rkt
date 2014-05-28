@@ -180,7 +180,11 @@
       (reverse (map deep-reverse-map list1))
       list1))
 
+(define (fringe list1)
+  (cond ((null? list1) null)
+        ((not (pair? list1)) list1)
+        (else (append (fringe (cdr list1))
+                      (list (fringe (car list1)))))))
+
 'ch2-done
 
-
-  
