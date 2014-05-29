@@ -186,5 +186,39 @@
         (else (append (fringe (cdr list1))
                       (list (fringe (car list1)))))))
 
+(define (scale-tree tree factor)
+  (cond ((null? tree) null)
+        ((not (pair? tree)) (* factor tree))
+        (else (cons (scale-tree (car tree) factor)
+                    (scale-tree (cdr tree) factor)))))
+
+(define (scale-tree-map tree factor)
+  (my-map (lambda (sub-tree)
+            (cond ((pair? sub-tree) (scale-tree-map sub-tree factor))
+                  (else (* factor sub-tree)))) tree))
+
+(define (square-tree tree)
+  (cond ((null? tree) null)
+        ((not (pair? tree)) (square tree))
+        (else (cons (square-tree (car tree))
+                    (square-tree (cdr tree))))))
+
+(define (tree-map proc tree)
+  (my-map (lambda (sub-tree)
+            (if (pair? sub-tree)
+                (tree-map proc sub-tree)
+                (proc sub-tree))) tree))
+
+(define (square-tree-map tree)
+  (tree-map square tree))
+
+
+(define (subsets s)
+  (if (null? s)
+      (list null)
+      (let ((rest (subsets (cdr s))))
+        (append rest (my-map (lambda (x)
+                               (cons (car s) x)) rest)))))
+
 'ch2-done
 
