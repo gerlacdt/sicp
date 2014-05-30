@@ -182,9 +182,9 @@
 
 (define (fringe list1)
   (cond ((null? list1) null)
-        ((not (pair? list1)) list1)
-        (else (append (fringe (cdr list1))
-                      (list (fringe (car list1)))))))
+        ((not (pair? list1)) (list list1))
+        (else (append (fringe (car list1))
+                      (fringe (cdr list1))))))
 
 (define (scale-tree tree factor)
   (cond ((null? tree) null)
@@ -219,6 +219,74 @@
       (let ((rest (subsets (cdr s))))
         (append rest (my-map (lambda (x)
                                (cons (car s) x)) rest)))))
+
+(define (filter predicate sequence)
+  (cond ((null? sequence) null)
+        ((predicate (car sequence))
+         (cons (car sequence)
+               (filter predicate (cdr sequence))))
+        (else (filter predicate (cdr sequence)))))
+
+(define (my-accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (my-accumulate op initial (cdr sequence)))))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      null
+      (cons low (enumerate-interval (+ 1 low) high))))
+
+(define (enumerate-tree tree)
+  (cond ((null? tree) null)
+        ((not (pair? tree)) (list tree))
+        (else (append (enumerate-tree (car tree))
+                      (enumerate-tree (cdr tree))))))
+
+
+(define (sum-odd-squares tree)
+  (my-accumulate + 0 (my-map square (filter odd? (enumerate-tree tree)))))
+
+(define (even-fibs n)
+  (my-accumulate cons null (filter even? (my-map fib (enumerate-interval 0 n)))))
+
+(define (all-fibs n)
+  (my-accumulate cons null (my-map fib (enumerate-interval 0 n))))
+
+(define (list-fib-squares n)
+  (my-accumulate cons null (my-map square
+                                   (my-map fib (enumerate-interval 0 n)))))
+
+(define (product-of-squares-of-odd-elements sequence)
+  (my-accumulate * 1 (my-map square (filter odd? sequence))))
+
+(define (map-accum proc sequence)
+  (my-accumulate (lambda (x y) (cons (proc x) y)) null sequence))
+
+(define (append-accum seq1 seq2)
+  (my-accumulate cons seq2 seq1))
+
+(define (length-accum sequence)
+  (my-accumulate (lambda (x y) (+ y 1)) 0 sequence))
+
+
+(define (horner-eval x coefficient-sequence)
+  (my-accumulate (lambda (this-coeff higher-terms)
+                   (+ this-coeff (* x higher-terms)))
+                 0
+                 coefficient-sequence))
+
+(= 79 (horner-eval 2 (list 1 3 0 5 0 1))) ; should be 79
+
+(define (count-leaves-accum tree)
+  (my-accumulate + 0 (my-map (lambda (sub-tree)
+                               (if (pair? sub-tree)
+                                   (count-leaves-accum sub-tree)
+                                   1))
+                             tree)))
+
+(count-leaves-accum '(1 2 3 (4 5 (6)))) ;should be 6
 
 'ch2-done
 
