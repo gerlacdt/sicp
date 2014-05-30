@@ -288,5 +288,113 @@
 
 (count-leaves-accum '(1 2 3 (4 5 (6)))) ;should be 6
 
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      null
+      (cons (my-accumulate op init (my-map
+                                    (lambda (x) (car x)) seqs))
+            (accumulate-n op init (my-map 
+                                   (lambda (x) (cdr x)) seqs)))))
+
+(accumulate-n + 0 '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))
+
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+(my-accumulate / 1 (list 1 2 3))
+(fold-left / 1 (list 1 2 3))
+(fold-left + 0 (list 1 2 3))
+(my-accumulate list null (list 1 2 3))
+(fold-left list null (list 1 2 3))
+
+(define (reverse-fold-right sequence)
+  (my-accumulate (lambda (x y) (append y (list x))) null sequence))
+
+(define (reverse-fold-left sequence)
+  (fold-left (lambda (x y) (append  (list y) x)) null sequence))
+
+(reverse-fold-left '(1 2 3 4 5))
+(reverse-fold-right '(1 2 3 4 5))
+
+(define (flatmap proc seq)
+  (my-accumulate append null (my-map proc seq)))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+(define (prime-sum-pairs n)
+  (my-map make-pair-sum
+           (filter prime-sum?
+                   (unique-pairs n))))
+
+(prime-sum-pairs 6)
+
+(define (my-remove item sequence)
+  (filter (lambda (x) (not (= x item)))
+          sequence))
+
+(define (permutations s)
+  (if (null? s)
+      (list null)
+      (flatmap (lambda (x)
+                 (my-map (lambda (p) (cons x p))
+                         (permutations (remove x s))))
+               s)))
+
+(permutations '(1 2 3))
+
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (my-map (lambda (j)
+                       (list j i)) (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
+(unique-pairs 4)
+
+(define (find-triples n)
+  (filter (lambda (triple) 
+            (and (not (= (car triple) (cadr triple)))
+                 (not (= (car triple) (caddr triple)))
+                 (not (= (cadr triple) (caddr triple)))))
+          (flatmap 
+           (lambda (i) (my-map 
+                        (lambda (j)
+                          (cons j i)) (enumerate-interval 1 n)))
+           (unique-pairs n))))
+
+(define (find-unique-triples-sum n)
+  (filter (lambda (triple)
+            (= n (+ (car triple) (cadr triple) (caddr triple))))
+          (find-triples n)))
+
+(find-triples 4)
+(find-unique-triples-sum 10)
+
+(define (memq item seq)
+  (cond ((null? seq) false)
+        ((eq? item (car seq)) seq)
+        (else (memq item (cdr seq)))))
+
+(memq 2 '(1 2 3 4 5))
+(memq 'd '(a b c))
+(memq 'apple '(x (apple sauce) y apple pear))
+
+(define (my-equal x y)
+  (if (and (pair? x) (pair? y))
+      (my-equal (cdr x) (cdr y))
+      (eq? x y)))
+
+(my-equal '(this is a list) '(this is a list))
+(my-equal '(this (is a) list) '(this is a list))
+
+
 'ch2-done
 
