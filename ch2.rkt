@@ -144,7 +144,7 @@
   (define (iter things answer)
     (if (null? things)
         answer
-        (iter (cdr things) 
+        (iter (cdr things)
               (cons answer (square (car things))))))
   (iter items null))
 
@@ -152,7 +152,7 @@
   (define (iter things answer)
     (if (null? things)
         answer
-        (iter (cdr things) 
+        (iter (cdr things)
               (cons (square (car things)) answer))))
   (iter items null))
 
@@ -293,7 +293,7 @@
       null
       (cons (my-accumulate op init (my-map
                                     (lambda (x) (car x)) seqs))
-            (accumulate-n op init (my-map 
+            (accumulate-n op init (my-map
                                    (lambda (x) (cdr x)) seqs)))))
 
 (accumulate-n + 0 '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))
@@ -330,6 +330,12 @@
 (define (make-pair-sum pair)
   (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
 
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (my-map (lambda (j)
+                       (list j i)) (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
 (define (prime-sum-pairs n)
   (my-map make-pair-sum
            (filter prime-sum?
@@ -351,21 +357,15 @@
 
 (permutations '(1 2 3))
 
-(define (unique-pairs n)
-  (flatmap (lambda (i)
-             (my-map (lambda (j)
-                       (list j i)) (enumerate-interval 1 (- i 1))))
-           (enumerate-interval 1 n)))
-
 (unique-pairs 4)
 
 (define (find-triples n)
-  (filter (lambda (triple) 
+  (filter (lambda (triple)
             (and (not (= (car triple) (cadr triple)))
                  (not (= (car triple) (caddr triple)))
                  (not (= (cadr triple) (caddr triple)))))
-          (flatmap 
-           (lambda (i) (my-map 
+          (flatmap
+           (lambda (i) (my-map
                         (lambda (j)
                           (cons j i)) (enumerate-interval 1 n)))
            (unique-pairs n))))
@@ -395,6 +395,170 @@
 (my-equal '(this is a list) '(this is a list))
 (my-equal '(this (is a) list) '(this is a list))
 
+;;; symbolic differentiation
+(define (variable? x)
+  (symbol? x))
 
-'ch2-done
+(define (same-variable? v1 v2)
+  (and (variable? v1) (variable? v2) (eq? v1 v2)))
 
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2)) (+ a1 a2))
+        (else (list '+ a1 a2))))
+
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (number? m1) (number? m2)) (* m1 m2))
+        (else (list '* m1 m2))))
+
+(define (=number? exp num)
+  (and (number? exp) (= exp num)))
+
+(define (sum? x)
+  (and (pair? x) (eq? (car x) '+)))
+
+(define (addend s)
+  (cadr s))
+
+(define (augend s)
+  (caddr s))
+
+(define (product? x)
+  (and (pair? x) (eq? (car x) '*)))
+
+(define (multiplier p)
+  (cadr p))
+
+(define (multiplicand p)
+  (caddr p))
+
+(define (exponantiation? exp)
+  (and (pair? exp) (eq? (car exp) '**)))
+
+(define (make-exponantiation base exponent)
+  (cond ((=number? exponent 0) 1)
+        ((=number? exponent 1) base)
+        (else (list '** base exponent))))
+
+(define (base exp)
+  (cadr exp))
+
+(define (exponent exp)
+  (caddr exp))
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var)
+                             1
+                             0))
+        ((sum? exp) (make-sum (deriv (addend exp) var)
+                              (deriv (augend exp) var)))
+        ((product? exp) (make-sum (make-product (multiplier exp)
+                                                (deriv (multiplicand exp) var))
+                                  (make-product (deriv (multiplier exp) var)
+                                                (multiplicand exp))))
+        ((exponantiation? exp)
+         (make-product (deriv (base exp) var)
+                       (make-product (exponent exp)
+                                     (make-exponantiation (base exp)
+                                                          (make-sum (exponent exp) -1)))))
+        (else (error "unknown expression type - DERIV" exp))))
+
+
+(deriv '(+ x 3) 'x)
+(deriv '(* x y) 'x)
+(deriv '(* (* x y) (+ x 3)) 'x)
+
+(make-exponantiation 4 2)
+(make-exponantiation 4 0)
+(make-exponantiation 4 1)
+
+(deriv '(** x 4) 'x)
+
+;;; data structures (sets)
+
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((my-equal x (car set)) #t)
+        (else (element-of-set? x (cdr set)))))
+
+(element-of-set? 6 '(1 2 3 4 5))
+
+(define (adjoin-set x set)
+  (if (element-of-set? x set)
+      set
+      (cons x set)))
+
+(adjoin-set 1 '(2 3 4 5))
+(adjoin-set 2 '(2 3 4 5))
+
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) null)
+        ((element-of-set? (car set1) set2)
+         (cons (car set1)
+               (intersection-set (cdr set1) set2)))
+        (else (intersection-set (cdr set1) set2))))
+
+(intersection-set '(1 2 3 4) '(3 4 5 6))
+(intersection-set '() '(1 2 3))
+
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        ((not (element-of-set? (car set1) set2))
+         (cons (car set1)
+               (union-set (cdr set1) set2)))
+        (else (union-set (cdr set1) set2))))
+
+(union-set '(1 2 3 4) '(3 4 5 6))
+
+(define (element-of-set-ordered x set)
+  (cond ((null? set) #f)
+        ((= x (car set)) #t)
+        ((< x (car set)) #f)
+        (else (element-of-set-ordered x (cdr set)))))
+
+(element-of-set-ordered 7 '(1 2 3 4 5))
+
+(define (intersection-set-ordered set1 set2)
+  (if (or (null? set1) (null? set2))
+      null
+      (let ((x1 (car set1))
+            (x2 (car set2)))
+        (cond ((= x1 x2)
+               (cons x1 (intersection-set-ordered (cdr set1)
+                                                  (cdr set2))))
+              ((< x1 x2)
+               (intersection-set-ordered (cdr set1) set2))
+              ((< x2 x1)
+               (intersection-set-ordered set1 (cdr set2)))))))
+
+(intersection-set-ordered '(1 2 3 4 7) '(3 4 5 6 7))
+
+(define (adjoin-set-ordered x set)
+  (cond ((null? set) (list x))
+        ((= x (car set)) set)
+        ((< x (car set)) (cons x set))
+        (else (cons (car set) (adjoin-set-ordered x (cdr set))))))
+
+(adjoin-set-ordered 4 '(5 6))
+
+(define (union-set-ordered set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        (else (let ((x1 (car set1))
+                    (x2 (car set2)))
+                (cond ((= x1 x2)
+                       (cons x1 (union-set-ordered (cdr set1) (cdr set2))))
+                      ((< x1 x2)
+                       (cons x1 (union-set-ordered (cdr set1) set2)))
+                      ((< x2 x1)
+                       (cons x2 (union-set-ordered set1 (cdr set2)))))))))
+
+(union-set-ordered '(1 2 3 4 5) '(2 3 4 5 6))
+
+ 'ch2-done
