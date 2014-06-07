@@ -324,6 +324,10 @@
 (define (flatmap proc seq)
   (my-accumulate append null (my-map proc seq)))
 
+;;; see good difference between map and map with append
+(flatmap (lambda (x) (list x (square x) (cube x))) '(1 2 3 4 5 6))  ; all elements in one big list
+(my-map (lambda (x) (list x (square x) (cube x))) '(1 2 3 4 5 6))  ; elements are distributed in list of lists
+
 (define (prime-sum? pair)
   (prime? (+ (car pair) (cadr pair))))
 
@@ -560,5 +564,8 @@
                        (cons x2 (union-set-ordered set1 (cdr set2)))))))))
 
 (union-set-ordered '(1 2 3 4 5) '(2 3 4 5 6))
+
+(define (new-method) 
+  'new-method)
 
  'ch2-done
