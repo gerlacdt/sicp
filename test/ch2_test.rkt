@@ -1,7 +1,7 @@
 #lang racket
 (require rackunit) 
 (require rackunit/text-ui)
-(require "ch2.rkt")
+(require "../ch2.rkt")
 
 (define sicp-ch2-tests
   (test-suite
