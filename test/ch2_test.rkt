@@ -15,13 +15,22 @@
     (check-equal? 79 (horner-eval 2 (list 1 3 0 5 0 1))))
 
    (test-case
-    "test binary tree implentation")
-   (let* ((tree (make-tree 5 (make-tree 3 (make-tree 1 null null) (make-tree 4 null null)) (make-tree 7 null null))))
-     (check-equal? false (element-of-treeset? 2 tree))
-     (check-equal? true (element-of-treeset? 5 tree))
-     (check-equal? true (element-of-treeset? 7 tree))
-     (check-equal? true (element-of-treeset? 1 tree))
-     (check-equal? true (element-of-treeset? 4 tree)))))
+    "test binary tree implentation"
+    (let* ((tree (make-tree 5 (make-tree 3 (make-tree 1 null null) (make-tree 4 null null)) (make-tree 7 null null)))
+           (tree2 (adjoin-set 7 (adjoin-treeset 3 (make-tree 5 null null)))))
+      (check-equal? false (element-of-treeset? 2 tree))
+      (check-equal? true (element-of-treeset? 5 tree))
+      (check-equal? true (element-of-treeset? 7 tree))
+      (check-equal? true (element-of-treeset? 1 tree))
+      (check-equal? true (element-of-treeset? 4 tree))
+      (check-equal? true (element-of-treeset? 7 tree2))))
+
+   (test-case
+    "tree as list"
+    (let* ((tree (fill-tree (make-tree 50 null null) 100 20))
+           (tree-list (tree->list-1 tree)))
+      (check-equal? tree-list (sort tree-list <))))))
+
 
 (run-tests sicp-ch2-tests)
 

@@ -597,7 +597,17 @@
                     (left-branch set)
                     (adjoin-treeset x (right-branch set))))))
 
-(define (new-method) 
-  'new-method)
+
+(define (tree->list-1 tree)
+  (if (null? tree)
+      '()
+      (append (tree->list-1 (left-branch tree))
+              (cons (entry tree)
+                    (tree->list-1 (right-branch tree))))))
+
+(define (fill-tree tree max n)
+  (if (= n 0)
+      tree
+      (fill-tree (adjoin-treeset (random max) tree) max (- n 1))))
 
  'ch2-done
