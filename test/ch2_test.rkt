@@ -29,7 +29,18 @@
     "tree as list"
     (let* ((tree (fill-tree (make-tree 50 null null) 100 20))
            (tree-list (tree->list-1 tree)))
-      (check-equal? tree-list (sort tree-list <))))))
+      (check-equal? tree-list (sort tree-list <))))
+
+
+   (test-case
+    "decode huffman sample message"
+    (let ((sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+          (sample-tree (make-code-tree (make-leaf 'A 4)
+                                       (make-code-tree
+                                        (make-leaf 'B 2)
+                                        (make-code-tree (make-leaf 'D 1)
+                                                        (make-leaf 'C 1))))))
+      (check-equal? '(A D A B B C A) (decode sample-message sample-tree))))))
 
 
 (run-tests sicp-ch2-tests)

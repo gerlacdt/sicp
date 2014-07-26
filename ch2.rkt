@@ -605,9 +605,111 @@
               (cons (entry tree)
                     (tree->list-1 (right-branch tree))))))
 
+(define (tree->list-2 tree)
+  (define (copy-to-list tree result-list)
+    (if (null? tree)
+        result-list
+        (copy-to-list (left-branch tree)
+                      (cons (entry tree)
+                            (copy-to-list (right-branch tree)
+                                          result-list)))))
+  (copy-to-list tree '()))
+
+(define (lookup-list given-key set-of-records)
+  (cond ((null? set-of-records) false)
+        ((equal? given-key (car set-of-records))
+         (car set-of-records))
+        (else (lookup-list given-key (cdr set-of-records)))))
+
+(define (lookup given-key tree)
+  (cond ((null? tree) false)
+        ((= given-key (entry tree)) tree)
+        ((< given-key (entry tree))
+         (lookup given-key (left-branch tree)))
+        (else (lookup given-key (right-branch tree)))))
+
 (define (fill-tree tree max n)
   (if (= n 0)
       tree
       (fill-tree (adjoin-treeset (random max) tree) max (- n 1))))
+
+
+;;; huffman encoding
+
+(define (make-leaf symbol weight)
+  (list 'leaf symbol weight))
+
+(define (leaf? object)
+  (eq? (car object) 'leaf))
+
+(define (symbol-leaf x)
+  (cadr x))
+
+(define (weight-leaf x)
+  (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (huffman-left-branch tree)
+  (car tree))
+
+(define (huffman-right-branch tree)
+  (cadr tree))
+
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        '()
+        (let ((next-branch
+               (choose-branch (car bits) current-branch)))
+          (if (leaf? next-branch)
+              (cons (symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (huffman-left-branch branch))
+        ((= bit 1) (huffman-right-branch branch))
+        (else (error "bad bit -- CHOOSE-BRANCH"))))
+
+
+;;; huffman prepare char merging for constructing a code-tree
+(define (huffman-adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((< (weight x) (weight (car set))) (cons x set))
+        (else (cons (car set)
+                    (huffman-adjoin-set x (cdr set))))))
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+      '()
+      (let ((pair (car pairs)))
+        (huffman-adjoin-set (make-leaf (car pair)
+                                       (cadr pair))
+                            (make-leaf-set (cdr pairs))))))
+
+(define (sample-tree)
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+                                   (make-leaf 'C 1)))))
+
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
 
  'ch2-done
