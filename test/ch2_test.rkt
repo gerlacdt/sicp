@@ -35,12 +35,14 @@
    (test-case
     "decode huffman sample message"
     (let ((sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+          (sample-encoded-message '(A D A B B C A))
           (sample-tree (make-code-tree (make-leaf 'A 4)
                                        (make-code-tree
                                         (make-leaf 'B 2)
                                         (make-code-tree (make-leaf 'D 1)
                                                         (make-leaf 'C 1))))))
-      (check-equal? '(A D A B B C A) (decode sample-message sample-tree))))))
+      (check-equal? sample-encoded-message (decode sample-message sample-tree))
+      (check-equal? sample-message (encode sample-encoded-message sample-tree))))))
 
 
 (run-tests sicp-ch2-tests)

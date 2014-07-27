@@ -615,11 +615,11 @@
                                           result-list)))))
   (copy-to-list tree '()))
 
-(define (lookup-list given-key set-of-records)
+(define (lookup-list given-key set-of-records key-fn)
   (cond ((null? set-of-records) false)
-        ((equal? given-key (car set-of-records))
+        ((equal? given-key (key-fn (car set-of-records)))
          (car set-of-records))
-        (else (lookup-list given-key (cdr set-of-records)))))
+        (else (lookup-list given-key (cdr set-of-records) key-fn))))
 
 (define (lookup given-key tree)
   (cond ((null? tree) false)
@@ -685,10 +685,41 @@
 (define (choose-branch bit branch)
   (cond ((= bit 0) (huffman-left-branch branch))
         ((= bit 1) (huffman-right-branch branch))
-        (else (error "bad bit -- CHOOSE-BRANCH"))))
+        (else (error (string-append "CHOOSE-BRANCH: bad bit: " (number->string bit))))))
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+
+(define (encode-symbol symbol tree)
+  (encode-symbol-1 symbol tree '()))   ;start with empty bit sequence
+
+(define (encode-symbol-1 symbol tree bits)
+    (if (leaf? tree)
+        (reverse bits)
+        (let ((left-branch (huffman-left-branch tree))
+              (right-branch (huffman-right-branch tree)))
+          (cond ((lookup-list symbol (symbols left-branch) identity)
+                 (encode-symbol-1 symbol left-branch (cons 0 bits)))
+                ((lookup-list symbol (symbols right-branch) identity)
+                 (encode-symbol-1 symbol right-branch (cons 1 bits)))
+                (else 
+                 (error (string-append "ENCODE-SYMBOL-1 character to encode not in alphabet: " (symbol->string symbol))))))))
+
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+                                   (make-leaf 'C 1)))))
+
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+(define sample-encoded-message '(A D A B B C A))
 
 
-;;; huffman prepare char merging for constructing a code-tree
+;;; huffman prepare chars merging for automatically constructing a code-tree
 (define (huffman-adjoin-set x set)
   (cond ((null? set) (list x))
         ((< (weight x) (weight (car set))) (cons x set))
@@ -703,13 +734,5 @@
                                        (cadr pair))
                             (make-leaf-set (cdr pairs))))))
 
-(define (sample-tree)
-  (make-code-tree (make-leaf 'A 4)
-                  (make-code-tree
-                   (make-leaf 'B 2)
-                   (make-code-tree (make-leaf 'D 1)
-                                   (make-leaf 'C 1)))))
 
-(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
-
- 'ch2-done
+'ch2-done
