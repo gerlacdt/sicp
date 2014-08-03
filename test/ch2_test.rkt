@@ -40,9 +40,16 @@
                                        (make-code-tree
                                         (make-leaf 'B 2)
                                         (make-code-tree (make-leaf 'D 1)
-                                                        (make-leaf 'C 1))))))
+                                                        (make-leaf 'C 1)))))
+          (sample-tree-2 (generate-huffman-tree '((A 4) (B 2 (C 1) (D 1))))))
       (check-equal? sample-encoded-message (decode sample-message sample-tree))
-      (check-equal? sample-message (encode sample-encoded-message sample-tree))))))
+      (check-equal? sample-message (encode sample-encoded-message sample-tree))))
+
+   (test-case
+    "(de)encode huffman message with generated huffman tree"
+    (let* ((sample-message '(A D A B B C A))
+           (sample-huffman-tree (generate-huffman-tree '((A 4) (B 2) (C 1) (D 1)))))
+      (check-equal? '(A D A B B C A) (decode (encode sample-message sample-huffman-tree) sample-huffman-tree))))))
 
 
 (run-tests sicp-ch2-tests)

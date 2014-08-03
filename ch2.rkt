@@ -734,5 +734,16 @@
                                        (cadr pair))
                             (make-leaf-set (cdr pairs))))))
 
+(define (generate-huffman-tree pairs)
+  (successive-merge (make-leaf-set pairs)))
+
+(define (successive-merge leaf-set)
+  (if (= 1 (length leaf-set))
+      (first leaf-set)
+      (let ((merged-node (make-code-tree (first leaf-set) (second leaf-set)))
+            (rest-leaf-set (cddr leaf-set)))
+        (successive-merge (cons merged-node rest-leaf-set)))))
+
+(define sample-huffman-tree-2 (generate-huffman-tree '((A 4) (B 2) (C 1) (D 1))))
 
 'ch2-done
