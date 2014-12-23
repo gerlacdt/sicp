@@ -4,18 +4,22 @@
 (provide (all-defined-out))
 
 ;;; tagged data
+
+;;; ex 2.78 add condition for number?
 (define (attach-tag type-tag contents)
-  (cons type-tag contents))
+  (if (number? contents)
+      contents
+      (cons type-tag contents)))
 
 (define (type-tag datum)
-  (if (pair? datum)
-      (car datum)
-      (error "Bad tagged datum -- TYPE-TAG" datum)))
+  (cond ((number? datum) 'scheme-number)
+        ((pair? datum) (car datum))
+        (else (error "Bad tagged datum -- TYPE-TAG" datum))))
 
 (define (contents datum)
-  (if (pair? datum)
-      (cdr datum)
-      (error "Bad tagged datum -- CONTENTS" datum)))
+  (cond ((number? datum) datum)
+        ((pair? datum) (cdr datum))
+        (else (error "Bad tagged datum -- CONTENTS" datum))))
 
 (define (rectangular? z)
   (eq? (type-tag z) 'rectangular))
@@ -107,7 +111,6 @@
  (define (apply-generic op . args)
    (let* ((type-tags (map type-tag args))
           (proc (get op type-tags)))
-     (displayln (format "type tags: ~a" type-tags))
      (if proc
          (apply proc (map contents args))
          (error "No method for these types -- APPLY GENERIC"
@@ -203,7 +206,7 @@
      (let ((g (my-gcd n d)))
        (cons (/ n g) (/ d g))))
    (define (add-rat x y)
-     (make-rat (+ (* (numer x (denom y)))
+     (make-rat (+ (* (numer x) (denom y))
                   (* (numer y) (denom x)))
                (* (denom x) (denom y))))
    (define (sub-rat x y)
@@ -256,6 +259,10 @@
   (define (div-complex z1 z2)
     (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
                        (- (angle z1) (angle z2))))
+  (define (equ? z1 z2)
+    (and (= (real-part z1) (real-part z2))
+         (= (imag-part z1) (imag-part z2))))
+  
   ;; interface to the rest of the system
   (define (tag z)
     (attach-tag 'complex z))
@@ -267,6 +274,8 @@
        (lambda (z1 z2) (tag (mul-complex z1 z2))))
   (put 'div '(complex complex)
        (lambda (z1 z2) (tag (div-complex z1 z2))))
+  (put 'equ? '(complex complex)
+       (lambda (x y) (equ? x y)))
   (put 'make-from-real-imag 'complex
        (lambda (x y) (tag (make-from-real-imag x y))))
   (put 'make-from-mag-ang 'complex
@@ -287,3 +296,8 @@
   ((get 'make-from-mag-ang 'complex) r a))
 
 (install-complex-package);
+
+
+;;; TODO
+(define (equ? x y)
+  (apply-generic 'equ? x y))
