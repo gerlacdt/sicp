@@ -4,5 +4,6 @@
 (require "ch2.rkt")
 (require "ch2_complex.rkt")
 (require "ch2_sym_diff.rkt")
+(require "ch3.rkt")
 
-'scip-done
+'sicp-done

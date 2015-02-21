@@ -1,7 +1,6 @@
 #lang racket
 (require racket/trace)
 (require "ch1.rkt")
-
 (provide (all-defined-out))
 
 (define (make-rat n d)
@@ -506,7 +505,7 @@
   (cond ((null? set) (make-tree x '() '()))
         ((= x (entry set)) set)
         ((< x (entry set))
-         (make-tree (entry set) 
+         (make-tree (entry set)
                     (adjoin-treeset x (left-branch set))
                     (right-branch set)))
         ((> x (entry set))
@@ -622,7 +621,7 @@
                  (encode-symbol-1 symbol left-branch (cons 0 bits)))
                 ((lookup-list symbol (symbols right-branch) identity)
                  (encode-symbol-1 symbol right-branch (cons 1 bits)))
-                (else 
+                (else
                  (error (string-append "ENCODE-SYMBOL-1 character to encode not in alphabet: " (symbol->string symbol))))))))
 
 (define sample-tree
