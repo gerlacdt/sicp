@@ -90,5 +90,25 @@
            (iter (- trials-remaining 1) trials-passed))))
   (iter trials 0))
 
+;; ex 3.17
+(define (count-pair x)
+  (let ((visited '()))
+    (define (iter x)
+      (cond ((not (pair? x)) 0)
+            ((memq visited x) 0)
+            (else
+             (begin (set! visited (cons visited x)))
+             (+ 1
+                (iter (car x))
+                (iter (cdr x))))))
+    (iter x)))
+
+(define (parallel-execute . procs)
+  (map thread-wait
+       (map (lambda (proc) (thread proc))
+            procs)))
+
+(parallel-execute (lambda () (displayln "hello daniel"))
+                  (lambda () (displayln "thread2")))
 
 'ch3-done
