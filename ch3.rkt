@@ -1,5 +1,6 @@
 #lang racket
 (require racket/trace)
+(require compatibility/mlist)
 (require "ch1.rkt")
 
 (provide (all-defined-out))
@@ -90,6 +91,7 @@
            (iter (- trials-remaining 1) trials-passed))))
   (iter trials 0))
 
+
 ;; ex 3.17
 (define (count-pair x)
   (let ((visited '()))
@@ -103,6 +105,113 @@
                 (iter (cdr x))))))
     (iter x)))
 
+;; 3.3.2  representing queues
+
+(define (front-ptr queue)
+  (mcar queue))
+
+(define (rear-ptr queue)
+  (mcdr queue))
+
+(define (set-front-ptr! queue item)
+  (set-mcar! queue item))
+
+(define (set-rear-ptr! queue item)
+  (set-mcdr! queue item))
+
+(define (empty-queue? queue)
+  (null? (front-ptr queue)))
+
+(define (make-queue)
+  (mcons '() '()))
+
+(define (front-queue queue)
+  (if (empty-queue? queue)
+      (error "FRONT called with empty queue" queue)
+      (mcar (front-ptr queue))))
+
+(define (insert-queue! queue item)
+  (let ((new-pair (mcons item '())))
+    (cond ((empty-queue? queue)
+           (set-front-ptr! queue new-pair)
+           (set-rear-ptr! queue new-pair)
+           queue)
+          (else
+           (set-mcdr! (rear-ptr queue) new-pair)
+           (set-rear-ptr! queue new-pair)
+           queue))))
+
+(define (delete-queue! queue)
+  (cond ((empty-queue? queue)
+         (error "DELETE! called with empty queue" queue))
+        (else
+         (set-front-ptr! queue (mcdr (front-ptr queue)))
+         queue)))
+
+;; ex. 3.21
+
+(define (print-queue queue)
+  (cond ((empty-queue? queue)
+         '())
+        (else
+         (mlist->list (mcar queue)))))
+
+;; ex. 3.22
+
+(define (make-queue-dispatch)
+  (let* ((queue (mcons '() '())))
+    ;; internal procedures
+    (define (front-ptr)
+      (mcar queue))
+    (define (rear-ptr)
+      (mcdr queue))
+    (define (set-front-ptr! item)
+      (set-mcar! queue item))
+    (define (set-rear-ptr! item)
+      (set-mcdr! queue item))
+    (define (empty-queue?)
+      (null? (front-ptr)))
+    (define (front-queue)
+      (if (empty-queue?)
+          (error "FRONT called with empty queue")
+          (mcar (front-ptr))))
+    (define (insert-queue! item)
+      (let ((new-pair (mcons item '())))
+        (cond ((empty-queue?)
+               (set-front-ptr! new-pair)
+               (set-rear-ptr! new-pair)
+               queue)
+              (else
+               (set-mcdr! (rear-ptr) new-pair)
+               (set-rear-ptr! new-pair)
+               queue))))
+    (define (delete-queue!)
+      (cond ((empty-queue?)
+             (error "DELETE! called with empty queue"))
+            (else
+             (set-front-ptr! (mcdr (front-ptr)))
+             queue)))
+    (define (print-queue)
+      (cond ((empty-queue?)
+             '())
+            (else
+             (mlist->list (mcar queue)))))
+    (define (dispatch m)
+      (cond ((eq? m 'front-ptr) front-ptr)
+            ((eq? m 'rear-ptr) rear-ptr)
+            ((eq? m 'set-front-ptr!) set-front-ptr!)
+            ((eq? m 'set-rear-ptr!) set-rear-ptr!)
+            ((eq? m 'empty-queue?) empty-queue?)
+            ((eq? m 'front-queue) front-queue)
+            ((eq? m 'insert-queue!) insert-queue!)
+            ((eq? m 'delete-queue!) delete-queue!)
+            ((eq? m 'print-queue) print-queue)
+            (else
+             (error "Unknown request -- MAKE-QUEUE-DISPATCH"))))
+    dispatch))
+
+
+;; concurrency
 (define (parallel-execute . procs)
   (map thread-wait
        (map (lambda (proc) (thread proc))
