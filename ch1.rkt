@@ -96,7 +96,7 @@
   (cond ((= amount 0) 1)
         ((or (< amount 0) (= kinds-of-coins 0)) 0)
         (else (+ (cc amount
-                     (- kinds-of-coins 1)) 
+                     (- kinds-of-coins 1))
                  (cc (- amount
                         (first-denomination kinds-of-coins))
                      kinds-of-coins)))))
@@ -171,7 +171,7 @@ This are the binominial coeffients."
   "Finds the smallest divisor for n."
   (find-divisor n 2))
 
-(define (next-test-divisor n) 
+(define (next-test-divisor n)
   "Generates the next test divisor."
   (cond ((= n 2) 3)
         (else (+ n 2))))
@@ -192,7 +192,7 @@ This are the binominial coeffients."
   (cond ((= exp 0) 1)
         ((even? exp)
          (remainder (square (expmod base (/ exp 2) m)) m))
-        (else 
+        (else
          (remainder (* base (expmod base (- exp 1) m)) m))))
 
 (define (fermat-test n)
@@ -211,7 +211,7 @@ This are the binominial coeffients."
   (start-prime-test n (current-milliseconds)))
 
 (define (start-prime-test n start-time)
-  (cond ((prime? n) 
+  (cond ((prime? n)
          (report-prime n (- (current-milliseconds) start-time))
          #t)
         (else #f)))
@@ -222,7 +222,7 @@ This are the binominial coeffients."
 (define (search-for-primes n)
   "Finds the next prime number after n and print it to REPL."
   (let ((next (+ 1 n)))
-    (cond ((odd? next) 
+    (cond ((odd? next)
            (cond ((prime? next) next)
                  (else (search-for-primes (+ n 2)))))
           (else (search-for-primes (+ n 1))))))
@@ -316,4 +316,3 @@ This are the binominial coeffients."
             (else (filtered-accummulate filter combiner null-value term (next a) next b)))))
 
 'ch1-done
-

@@ -236,4 +236,57 @@
 (parallel-execute (lambda () (displayln "hello daniel"))
                   (lambda () (displayln "thread2")))
 
-'ch3-done
+
+
+
+;; streams 3.5
+
+(define (memo-proc proc)
+  (let ((already-run? false) (result false))
+    (lambda ()
+      (if (not already-run?)
+          (begin (set! result (proc))
+                 (set! already-run? true)
+                 result)
+          result))))
+
+(define-syntax-rule (my-delay exp)
+  (memo-proc (lambda () exp)))
+
+(define (my-force delayed-object)
+  (delayed-object))
+
+(define-syntax-rule (cons-stream a b)
+  (cons a (my-delay b)))
+
+(define (stream-car stream)
+  (car stream))
+
+(define (stream-cdr stream)
+  (my-force (cdr stream)))
+
+(define the-empty-stream '())
+
+(define (stream-null? stream)
+  (null? stream))
+
+(define (stream-enumerate-interval low high)
+  (if (> low high)
+      the-empty-stream
+      (cons-stream low
+                   (stream-enumerate-interval (+ low 1) high))))
+
+(define (stream-filter pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((pred (stream-car stream))
+         (cons-stream (stream-car stream)
+                      (stream-filter pred
+                                     (stream-cdr stream))))
+        (else (stream-filter pred (stream-cdr stream)))))
+
+(define (test-stream from to)
+  (stream-car (stream-cdr
+               (stream-filter prime?
+                              (stream-enumerate-interval from to))))
+
+  'ch3-done)
