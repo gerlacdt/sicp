@@ -270,6 +270,15 @@
 (define (stream-null? stream)
   (null? stream))
 
+(define (stream-for-each proc s)
+  (if (stream-null? s)
+      'done
+      (begin (proc (stream-car s))
+             (stream-for-each proc (stream-cdr s)))))
+
+(define (display-stream s)
+  (stream-for-each displayln s))
+
 (define (stream-enumerate-interval low high)
   (if (> low high)
       the-empty-stream
@@ -287,6 +296,6 @@
 (define (test-stream from to)
   (stream-car (stream-cdr
                (stream-filter prime?
-                              (stream-enumerate-interval from to))))
+                              (stream-enumerate-interval from to)))))
 
-  'ch3-done)
+'ch3-done
