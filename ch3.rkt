@@ -270,6 +270,17 @@
 (define (stream-null? stream)
   (null? stream))
 
+(define (my-stream-ref s n)
+  (if (= n 0)
+      (stream-car s)
+      (my-stream-ref (stream-cdr s) (- n 1))))
+
+(define (my-stream-map proc s)
+  (if (stream-null? s)
+      the-empty-stream
+      (cons-stream (proc (stream-car s))
+                   (my-stream-map proc (stream-cdr s)))))
+
 (define (stream-for-each proc s)
   (if (stream-null? s)
       'done
@@ -278,6 +289,16 @@
 
 (define (display-stream s)
   (stream-for-each displayln s))
+
+(define (my-stream->list s)
+  (if (stream-null? s)
+      '()
+      (cons (stream-car s) (my-stream->list (stream-cdr s)))))
+
+(define (my-stream-take s n)
+  (if (or (stream-null? s) (= n 0))
+      '()
+      (cons (stream-car s) (my-stream-take (stream-cdr s) (- n 1)))))
 
 (define (stream-enumerate-interval low high)
   (if (> low high)
@@ -293,9 +314,73 @@
                                      (stream-cdr stream))))
         (else (stream-filter pred (stream-cdr stream)))))
 
-(define (test-stream from to)
+(define (second-prime-range from to)
   (stream-car (stream-cdr
                (stream-filter prime?
                               (stream-enumerate-interval from to)))))
+
+;; ex 3.50
+(define (my-stream-map-multi-args proc . argstreams)
+  (if (stream-null? (car argstreams))
+      the-empty-stream
+      (cons-stream
+       (apply proc (map stream-car argstreams))
+       (apply my-stream-map-multi-args (cons proc (map stream-cdr argstreams))))))
+
+;; ex 3.51
+(define (show x)
+  (displayln x)
+  x)
+
+(define x (my-stream-map show (stream-enumerate-interval 0 10)))
+(my-stream-ref x 5)
+(my-stream-ref x 7)
+
+;; ex 3.52
+(define ex-sum 0)
+(define (accum x)
+  (set! ex-sum (+ x ex-sum))
+  ex-sum)
+
+(define seq (my-stream-map accum (stream-enumerate-interval 1 20)))
+(define y (stream-filter even? seq))
+(define z (stream-filter (lambda (x) (= (remainder x 5) 0)) seq))
+
+(my-stream-ref y 7)
+(display-stream z)
+
+(define (integers-starting-from n)
+  (cons-stream n (integers-starting-from (+ n 1))))
+
+(define integers (integers-starting-from 1))
+
+(define (divisible? x y)
+  (= (remainder x y) 0))
+
+(define (no-sevens)
+  (stream-filter (lambda (x) (not (divisible? x 7)))
+                 integers))
+
+(define (sevens)
+  (stream-filter (lambda (x) (divisible? x 7))
+                 integers))
+
+
+(define (fibgen a b)
+  (cons-stream a (fibgen b (+ a b))))
+
+(define fibs (fibgen 0 1))
+
+
+(define (sieve stream)
+  (cons-stream
+   (stream-car stream)
+   (sieve (stream-filter
+           (lambda (x)
+             (not (divisible? x (stream-car stream))))
+           (stream-cdr stream)))))
+
+(define primes (sieve (integers-starting-from)))
+
 
 'ch3-done
