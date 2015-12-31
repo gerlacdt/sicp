@@ -380,7 +380,45 @@
              (not (divisible? x (stream-car stream))))
            (stream-cdr stream)))))
 
-(define primes (sieve (integers-starting-from)))
+(define primes (sieve (integers-starting-from 2)))
 
+(define ones (cons-stream 1 ones))
+
+(define (add-streams s1 s2)
+  (my-stream-map-multi-args + s1 s2))
+
+(define integers2
+  (cons-stream 1 (add-streams ones integers2)))
+
+(define fibs2
+  (cons-stream 0
+               (cons-stream 1
+                            (add-streams (stream-cdr fibs2)
+                                         fibs2))))
+
+(define (scale-stream stream factor)
+  (my-stream-map (lambda (x) (* x factor)) stream))
+
+(define double (cons-stream 1 (scale-stream double 2)))
+
+(define (prime? n)
+  (define (iter ps)
+    (cond ((> (square (stream-car ps)) n) true)
+          ((divisible? n (stream-car ps)) false)
+          (else (iter (stream-cdr ps)))))
+  (iter primes2))
+
+(define primes2
+  (cons-stream
+   2
+   (stream-filter prime? (integers-starting-from 3))))
+
+(define power-2 (cons-stream 1 (add-streams power-2 power-2)))
+
+(define (mul-streams s1 s2)
+  (my-stream-map-multi-args * s1 s2))
+
+(define factorials-2 (cons-stream 1 (mul-streams factorials-2
+                                                 integers2)))
 
 'ch3-done
