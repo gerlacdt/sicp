@@ -332,9 +332,9 @@
   (displayln x)
   x)
 
-(define x (my-stream-map show (stream-enumerate-interval 0 10)))
-(my-stream-ref x 5)
-(my-stream-ref x 7)
+(define x-2 (my-stream-map show (stream-enumerate-interval 0 10)))
+(my-stream-ref x-2 5)
+(my-stream-ref x-2 7)
 
 ;; ex 3.52
 (define ex-sum 0)
@@ -399,9 +399,9 @@
 (define (scale-stream stream factor)
   (my-stream-map (lambda (x) (* x factor)) stream))
 
-(define double (cons-stream 1 (scale-stream double 2)))
+(define double-2 (cons-stream 1 (scale-stream double-2 2)))
 
-(define (prime? n)
+(define (prime?-2 n)
   (define (iter ps)
     (cond ((> (square (stream-car ps)) n) true)
           ((divisible? n (stream-car ps)) false)
@@ -411,7 +411,7 @@
 (define primes2
   (cons-stream
    2
-   (stream-filter prime? (integers-starting-from 3))))
+   (stream-filter prime?-2 (integers-starting-from 3))))
 
 (define power-2 (cons-stream 1 (add-streams power-2 power-2)))
 
