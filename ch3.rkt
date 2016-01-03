@@ -413,12 +413,52 @@
    2
    (stream-filter prime?-2 (integers-starting-from 3))))
 
+;; ex. 3.53
 (define power-2 (cons-stream 1 (add-streams power-2 power-2)))
 
+;; ex. 3.54
 (define (mul-streams s1 s2)
   (my-stream-map-multi-args * s1 s2))
 
 (define factorials-2 (cons-stream 1 (mul-streams factorials-2
                                                  integers2)))
+
+;; ex. 3.55
+(define (partial-sums stream)
+  (cons-stream (stream-car stream)
+               (add-streams (partial-sums stream)
+                            (stream-cdr stream))))
+
+;; ex. 3.56
+(define (my-merge s1 s2)
+  (cond ((stream-null? s1) s2)
+        ((stream-null? s2) s1)
+        (else
+         (let ((s1car (stream-car s1))
+               (s2car (stream-car s2)))
+           (cond ((< s1car s2car)
+                  (cons-stream s1car (my-merge (stream-cdr s1) s2)))
+                 ((> s1car s2car)
+                  (cons-stream s2car (my-merge s1 (stream-cdr s2))))
+                 (else
+                  (cons-stream s1car
+                               (my-merge (stream-cdr s1)
+                                         (stream-cdr s2)))))))))
+
+(define hamming-stream
+  (cons-stream 1 (my-merge (my-merge (scale-stream integers2 2) (scale-stream integers2 3)) (scale-stream integers2 5))))
+
+;; ex. 3.57 not my solutions
+(define (integrate-series stream)
+  (my-stream-map-multi-args * (my-stream-map-multi-args / ones integers2) stream))
+
+(define exp-series
+  (cons-stream 1 (integrate-series exp-series)))
+
+(define sine-series
+  (cons-stream 0 (integrate-series cosine-series)))
+
+(define cosine-series
+  (cons-stream 1 (integrate-series (scale-stream sine-series -1))))
 
 'ch3-done

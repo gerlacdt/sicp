@@ -56,7 +56,7 @@
     (cons x y))
 
   (define (make-from-mag-ang r a)
-    (cons (* r (cos a)) 
+    (cons (* r (cos a))
           (* r (sin a))))
 
   ;; interface to the rest of the system
@@ -262,7 +262,7 @@
   (define (equ? z1 z2)
     (and (= (real-part z1) (real-part z2))
          (= (imag-part z1) (imag-part z2))))
-  
+
   ;; interface to the rest of the system
   (define (tag z)
     (attach-tag 'complex z))
