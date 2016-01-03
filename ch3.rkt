@@ -461,4 +461,21 @@
 (define cosine-series
   (cons-stream 1 (integrate-series (scale-stream sine-series -1))))
 
+(define (sqrt-improve guess x)
+  (average guess (/ x guess)))
+
+(define (sqrt-stream x)
+  (define guesses
+    (cons-stream 1.0
+                 (my-stream-map-multi-args
+                  (lambda (guess) (sqrt-improve guess x))
+                  guesses)))
+  guesses)
+
+(define (pi-summands n)
+  (cons-stream (/ 1.0 n)
+               (my-stream-map - (pi-summands (+ n 2)))))
+
+(define pi-stream
+  (scale-stream (partial-sums (pi-summands 1)) 4))
 'ch3-done
