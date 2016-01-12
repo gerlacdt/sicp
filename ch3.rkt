@@ -478,4 +478,34 @@
 
 (define pi-stream
   (scale-stream (partial-sums (pi-summands 1)) 4))
+
+(define (euler-transform s)
+  (let ((s0 (my-stream-ref s 0))           ; Sn-1
+        (s1 (my-stream-ref s 1))           ; Sn
+        (s2 (my-stream-ref s 2)))          ; Sn+1
+    (cons-stream (- s2 (/ (square (- s2 s1))
+                          (+ s0 (* -2 s1) s2)))
+                 (euler-transform (stream-cdr s)))))
+
+(define (make-tableau transform s)
+  (cons-stream s
+               (make-tableau transform
+                             (transform s))))
+
+(define (accelerated-sequence transform s)
+  (my-stream-map stream-car
+                 (make-tableau transform s)))
+
+;; ex. 3.64
+(define (stream-limit stream tolerance)
+  (let ((s0 (my-stream-ref stream 0))
+        (s1 (my-stream-ref stream 1)))
+    (if (or (stream-null? stream) (< (abs (- s1 s0)) tolerance))
+        '()
+        (cons s1 (stream-limit (stream-cdr stream) tolerance)))))
+
+(define (sqrt x tolerance)
+  (stream-limit (sqrt-stream x) tolerance))
+
+
 'ch3-done
