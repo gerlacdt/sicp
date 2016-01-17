@@ -426,8 +426,8 @@
 ;; ex. 3.55
 (define (partial-sums stream)
   (cons-stream (stream-car stream)
-               (add-streams (partial-sums stream)
-                            (stream-cdr stream))))
+               (add-streams (stream-cdr stream)
+                            (partial-sums stream))))
 
 ;; ex. 3.56
 (define (my-merge s1 s2)
@@ -506,6 +506,44 @@
 
 (define (sqrt x tolerance)
   (stream-limit (sqrt-stream x) tolerance))
+
+;; ex. 3.65
+
+(define (ln2)
+  (define (s n)
+    (cons-stream (/ 1.0 n)
+                 (my-stream-map - (s (+ n 1)))))
+  (partial-sums (s 1.0)))
+
+
+;;
+
+(define (stream-append s1 s2)
+  (if (stream-null? s1)
+      s2
+      (cons-stream (stream-car s1)
+                   (stream-append (stream-cdr s1) s2))))
+
+(define (interleave s1 s2)
+  (if (stream-null? s1)
+      s2
+      (cons-stream (stream-car s1)
+                   (interleave s2 (stream-cdr s1)))))
+
+(define (pairs s t)
+  (cons-stream
+   (list (stream-car s) (stream-car t))
+   (interleave
+    (my-stream-map (lambda (x) (list (stream-car s) x))
+                (stream-cdr t))
+    (pairs (stream-cdr s) (stream-cdr t)))))
+
+(define int-pairs (pairs integers2 integers2))
+
+(define (prime-sum-pairs2)
+  (stream-filter (lambda(pair)
+                   (prime? (+ car pair) (cadr pair)))
+                 int-pairs))
 
 
 'ch3-done
