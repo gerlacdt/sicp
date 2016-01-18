@@ -545,5 +545,72 @@
                    (prime? (+ car pair) (cadr pair)))
                  int-pairs))
 
+;; ex. 3.67
+(define (all-pairs s t)
+  (cons-stream
+   (list (stream-car s) (stream-car t))
+   (interleave
+    (interleave
+     (my-stream-map (lambda (x) (list (stream-car s) x))
+                    (stream-cdr t))
+     (all-pairs (stream-cdr s) (stream-cdr t)))
+    (my-stream-map (lambda (x) (list x (stream-car t)))
+                   (stream-cdr s)))))
+
+(define all-int-pairs (all-pairs integers2 integers2))
+
+;; ex. 3.69
+(define (triples s t u)
+  (cons-stream
+   (list (stream-car s) (stream-car t) (stream-car u))
+   (interleave
+    (my-stream-map (lambda (x) (cons (stream-car s)  x))
+                   (pairs t  (stream-cdr u)))
+    (triples (stream-cdr s) (stream-cdr t) (stream-cdr u)))))
+
+(define int-triples (triples integers2 integers2 integers2))
+
+(define py-triples
+  (stream-filter (lambda(triple)
+                   (let ((a (car triple))
+                         (b (cadr triple))
+                         (c (caddr triple)))
+                     (if (= (* c c) (+ (* a a) (* b b)))
+                         #t
+                         #f)))
+                 int-triples))
+
+;; ex. 3.70
+(define (merge-weighted s1 s2 weight-fn)
+  (cond ((stream-null? s1) s2)
+        ((stream-null? s2) s1)
+        (else
+         (let ((s1car (stream-car s1))
+               (s2car (stream-car s2)))
+           (cond ((<= (weight-fn s1car) (weight-fn s2car))
+                  (cons-stream s1car (merge-weighted (stream-cdr s1) s2 weight-fn)))
+                 (else
+                  (cons-stream s2car
+                               (merge-weighted s1
+                                               (stream-cdr s2) weight-fn))))))))
+(define (weighted-pairs s1 s2 weight)
+  (cons-stream (list (stream-car s1) (stream-car s2))
+               (merge-weighted (my-stream-map (lambda (x) (list (stream-car s1) x))
+                                           (stream-cdr s2))
+                               (weighted-pairs (stream-cdr s1)
+                                               (stream-cdr s2) weight)
+                               weight)))
+
+(define weight1 (lambda (x) (+ (car x) (cadr x))))
+(define pairs1 (weighted-pairs integers2 integers2 weight1))
+
+(define stream235 (stream-filter (lambda (x) (not  (or (divides? 2 x)
+                                                       (divides? 3 x)
+                                                       (divides? 5 x))))
+                                 integers2))
+
+(define weight2 (lambda (x) (+ (* 2 (car x)) (* 3 (cadr x)) (* 5 (car x) (cadr x)))))
+(define pairs2 (weighted-pairs stream235 stream235 weight2))
+
 
 'ch3-done
