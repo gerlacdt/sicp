@@ -535,7 +535,7 @@
    (list (stream-car s) (stream-car t))
    (interleave
     (my-stream-map (lambda (x) (list (stream-car s) x))
-                (stream-cdr t))
+                   (stream-cdr t))
     (pairs (stream-cdr s) (stream-cdr t)))))
 
 (define int-pairs (pairs integers2 integers2))
@@ -596,7 +596,7 @@
 (define (weighted-pairs s1 s2 weight)
   (cons-stream (list (stream-car s1) (stream-car s2))
                (merge-weighted (my-stream-map (lambda (x) (list (stream-car s1) x))
-                                           (stream-cdr s2))
+                                              (stream-cdr s2))
                                (weighted-pairs (stream-cdr s1)
                                                (stream-cdr s2) weight)
                                weight)))
@@ -612,5 +612,66 @@
 (define weight2 (lambda (x) (+ (* 2 (car x)) (* 3 (cadr x)) (* 5 (car x) (cadr x)))))
 (define pairs2 (weighted-pairs stream235 stream235 weight2))
 
+
+;; ex. 3.71
+(define (weight-ramanujan x)
+  (+ (expt (car x) 3) (expt (cadr x) 3)))
+
+(define (ramanujan-filter pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((pred (stream-car stream) (stream-car (stream-cdr stream)))
+         (cons-stream (stream-car stream)
+                      (ramanujan-filter pred
+                                     (stream-cdr stream))))
+        (else (ramanujan-filter pred (stream-cdr stream)))))
+
+(define ramanujan-all-pairs (weighted-pairs integers2 integers2 weight-ramanujan))
+
+(define ramanujan-numbers
+  (my-stream-map
+   weight-ramanujan
+   (ramanujan-filter
+    (lambda (current next)
+      (= (weight-ramanujan current) (weight-ramanujan next)))
+    ramanujan-all-pairs)))
+
+;; ex. 3.72
+;; (define (merge-filter pred . argstreams)
+;;   (if (stream-null? (car argstreams))
+;;       the-empty-stream
+;;       (let ((filtered (filter pred (map stream-car argstreams))))
+;;         (if (not (null? filtered))
+;;             (cons-stream filtered
+;;                          (apply merge-filter (map stream-cdr argstreams)))
+;;             (apply merge-filter (map stream-cdr argstreams))))))
+
+;; (define ram (merge-filter (lambda (x y)
+;;                             (= (weight-ramanujan x) (weight-ramanujan y)))
+;;                           ramanujan-all-pairs (stream-cdr ramanujan-all-pairs)))
+
+(define (weight-square x)
+  (+ (expt (car x) 2) (expt (cadr x) 2)))
+
+(define (consecutive-3-filter pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((pred (stream-car stream)
+               (stream-car (stream-cdr stream))
+               (stream-car (stream-cdr (stream-cdr stream))))
+         (cons-stream (list (stream-car stream)
+                            (stream-car (stream-cdr stream))
+                            (stream-car (stream-cdr (stream-cdr stream))))
+                       (consecutive-3-filter pred (stream-cdr stream))))
+        (else (consecutive-3-filter pred (stream-cdr stream)))))
+
+(define square-sum-all-pairs
+  (weighted-pairs integers2 integers2 weight-square))
+
+(define consecutive-3-numbers
+  (my-stream-map
+   (lambda (x)
+     (append x (weight-square (car x))))
+   (consecutive-3-filter (lambda(x y z)
+                           (= (weight-square x) (weight-square y) (weight-square z)))
+                         square-sum-all-pairs)))
 
 'ch3-done
