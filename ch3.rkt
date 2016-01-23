@@ -635,20 +635,25 @@
       (= (weight-ramanujan current) (weight-ramanujan next)))
     ramanujan-all-pairs)))
 
+;; ramanujan number better solution
+(define (merge-filter pred . argstreams)
+  (if (stream-null? (car argstreams))
+      the-empty-stream
+      (let ((values (map stream-car argstreams)))
+        (if (apply pred values)
+            (cons-stream values
+                         (apply merge-filter (append (list pred) (map stream-cdr argstreams))))
+            (apply merge-filter (append (list pred) (map stream-cdr argstreams)))))))
+
+(define ram
+  (my-stream-map (lambda (x) (append x (weight-ramanujan (car x))))
+                 (merge-filter (lambda (x y)
+                                 (= (weight-ramanujan x) (weight-ramanujan y)))
+                               ramanujan-all-pairs
+                               (stream-cdr ramanujan-all-pairs))))
+
+
 ;; ex. 3.72
-;; (define (merge-filter pred . argstreams)
-;;   (if (stream-null? (car argstreams))
-;;       the-empty-stream
-;;       (let ((filtered (filter pred (map stream-car argstreams))))
-;;         (if (not (null? filtered))
-;;             (cons-stream filtered
-;;                          (apply merge-filter (map stream-cdr argstreams)))
-;;             (apply merge-filter (map stream-cdr argstreams))))))
-
-;; (define ram (merge-filter (lambda (x y)
-;;                             (= (weight-ramanujan x) (weight-ramanujan y)))
-;;                           ramanujan-all-pairs (stream-cdr ramanujan-all-pairs)))
-
 (define (weight-square x)
   (+ (expt (car x) 2) (expt (cadr x) 2)))
 
