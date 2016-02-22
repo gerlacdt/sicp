@@ -679,4 +679,23 @@
                            (= (weight-square x) (weight-square y) (weight-square z)))
                          square-sum-all-pairs)))
 
+(define (integral integrand initial-value dt)
+  (define int
+    (cons-stream initial-value
+                 (add-streams (scale-stream integrand dt)
+                              int)))
+  int)
+
+;; ex. 3.73
+(define cube-stream
+  (my-stream-map cube integers2))
+
+(define (RC R C dt)
+  (lambda (i v0)
+    (add-streams (integral (scale-stream ones (/ 1.0 C)) v0 dt)
+                 (scale-stream i R))))
+
+
+(define RC1 (RC 5 1 0.5))
+
 'ch3-done
