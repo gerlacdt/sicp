@@ -306,3 +306,7 @@
     (define-variable! 'false false initial-env)
     initial-env))
 (define the-global-environment (setup-environment))
+
+;; example calls
+;; (eval '(define square (lambda (x) (* x x))) the-global-environment)
+;; (eval '(square 4) the-global-environment)
